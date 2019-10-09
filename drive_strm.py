@@ -245,20 +245,7 @@ def stream_bridge(request_file):
         else:
             logger.info(f"Found {len(transcoded_versions)} transcoded versions for {request_file} / {item_name}: "
                         f"{sorted_transcodes_string(transcoded_versions)}")
-            if request_data['transcode'] not in transcoded_versions:
-                logger.error(
-                    f"There was no {request_data['transcode']} version available for {request_file} / {item_name}")
-                try:
-                    return serve_partial(transcoded_versions[-1], request.headers.get('Range'),
-                                         teamdrive_id=teamdrive_id)
-                except TimeoutError:
-                    pass
-                except Exception:
-                    logger.exception(
-                        f"Exception proxying stream request from {request.remote_addr} for "
-                        f"{request_file} / {item_name} / transcode: {request_data['transcode']}: ")
-                return abort(500)
-            else:
+            if request_data['transcode'] in transcoded_versions:
                 logger.info(f"Proxy stream request from {request.remote_addr} for {request_file} / {item_name} / "
                             f"transcode: {request_data['transcode']}")
                 try:
@@ -271,7 +258,60 @@ def stream_bridge(request_file):
                         f"Exception proxying stream request from {request.remote_addr} for "
                         f"{request_file} / {item_name} / transcode: {request_data['transcode']}: ")
                 return abort(500)
-
+            elif '1080' in transcoded_versions:
+                try:
+                    return serve_partial(transcoded_versions['1080'], request.headers.get('Range'),
+                                         teamdrive_id=teamdrive_id)
+                except TimeoutError:
+                    pass
+                except Exception:
+                    logger.exception(
+                        f"Exception proxying stream request from {request.remote_addr} for "
+                        f"{request_file} / {item_name} / transcode: {'1080'}: ")
+                return abort(500)
+            elif '720' in transcoded_versions:
+                try:
+                    return serve_partial(transcoded_versions['720'], request.headers.get('Range'),
+                                         teamdrive_id=teamdrive_id)
+                except TimeoutError:
+                    pass
+                except Exception:
+                    logger.exception(
+                        f"Exception proxying stream request from {request.remote_addr} for "
+                        f"{request_file} / {item_name} / transcode: {'720'}: ")
+                return abort(500)
+            elif '480' in transcoded_versions:
+                try:
+                    return serve_partial(transcoded_versions['480'], request.headers.get('Range'),
+                                         teamdrive_id=teamdrive_id)
+                except TimeoutError:
+                    pass
+                except Exception:
+                    logger.exception(
+                        f"Exception proxying stream request from {request.remote_addr} for "
+                        f"{request_file} / {item_name} / transcode: {'480'}: ")
+                return abort(500)
+            elif '360' in transcoded_versions:
+                try:
+                    return serve_partial(transcoded_versions['360'], request.headers.get('Range'),
+                                         teamdrive_id=teamdrive_id)
+                except TimeoutError:
+                    pass
+                except Exception:
+                    logger.exception(
+                        f"Exception proxying stream request from {request.remote_addr} for "
+                        f"{request_file} / {item_name} / transcode: {'360'}: ")
+                return abort(500)
+            else:
+                try:
+                    return serve_partial(transcoded_versions[-1], request.headers.get('Range'),
+                                         teamdrive_id=teamdrive_id)
+                except TimeoutError:
+                    pass
+                except Exception:
+                    logger.error(
+                        f"There was no {request_data['transcode']} version available for {request_file} / {item_name}")
+                return abort(500)
     # handle stream
     if (cfg.server.direct_streams and ('proxy' not in request_data or request_data['proxy'] != '1')) or (
             'direct' in request_data and request_data['direct'] == '1'):
