@@ -248,6 +248,16 @@ def stream_bridge(request_file):
             if request_data['transcode'] not in transcoded_versions:
                 logger.error(
                     f"There was no {request_data['transcode']} version available for {request_file} / {item_name}")
+                try:
+                    return serve_partial(transcoded_versions[-1], request.headers.get('Range'),
+                                         teamdrive_id=teamdrive_id)
+                except TimeoutError:
+                    pass
+                except Exception:
+                    logger.exception(
+                        f"Exception proxying stream request from {request.remote_addr} for "
+                        f"{request_file} / {item_name} / transcode: {request_data['transcode']}: ")
+                return abort(500)
             else:
                 logger.info(f"Proxy stream request from {request.remote_addr} for {request_file} / {item_name} / "
                             f"transcode: {request_data['transcode']}")
